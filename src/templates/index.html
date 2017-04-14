@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.js"></script>
+  <script src="/static/js/script.js"></script>
+	<title>CS572 HW4</title>
+</head>
+<body>
+<div ng-controller="autoCompleteViewController">
+  <form align="center">
+    <section>
+      <label for="querybox">Enter you query</label>
+      <br/>
+      <input type="text" id="querytext" ng-model="query"/>
+      <br/>
+      <button id="default" type="button">default search</button>
+      <button id="pagerank" type="button">pagerank search</button>
+      <br/>
+    </section>
+  </form>
+  <ul>
+    <li ng-repeat="word in suggestions">{{ word }}</li>
+  </ul>
+</div>
+<div ng-controller="searchResultsViewController">
+  <tbody ng-cloak>
+    <tr ng-repeat="result in results">
+      <td>{{ result }}</td>
+    </tr>
+  </tbody>
+</div>
+</body>
+</html>
