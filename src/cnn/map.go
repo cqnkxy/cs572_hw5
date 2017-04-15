@@ -11,7 +11,7 @@ var IdToUrl map[string]string
 
 func init() {
 	IdToUrl = map[string]string{}
-	file, err := os.Open("cnn/mapCNNDataFile.csv")
+	file, err := os.Open("/Users/xueyuan/Documents/USC/csci572/hw5/src/cnn/mapCNNDataFile.csv")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,33 +1,47 @@
 <!DOCTYPE html>
-<html ng-app="myApp">
+<html ng-app="app">
 <head>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.js"></script>
-  <script src="/static/js/script.js"></script>
-	<title>CS572 HW4</title>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-animate.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-sanitize.js"></script>
+  <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+  <script src="static/js/script.js"></script>
+  <script src="static/js/dirPagination.js"></script>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <link href="static/css/style.css" rel="stylesheet">
+	<title>CS572 HW5</title>
 </head>
 <body>
-<div ng-controller="autoCompleteViewController">
-  <form align="center">
-    <section>
-      <label for="querybox">Enter you query</label>
-      <br/>
-      <input type="text" id="querytext" ng-model="query"/>
-      <br/>
-      <button id="default" type="button">default search</button>
-      <button id="pagerank" type="button">pagerank search</button>
-      <br/>
-    </section>
-  </form>
-  <ul>
-    <li ng-repeat="word in suggestions">{{ word }}</li>
-  </ul>
-</div>
-<div ng-controller="searchResultsViewController">
-  <tbody ng-cloak>
-    <tr ng-repeat="result in results">
-      <td>{{ result }}</td>
-    </tr>
-  </tbody>
+<div ng-controller="searchViewController">
+  <div class='container-fluid'>
+    <h1>CSCI572 HW5</h1>
+    <form class="form-group" ng-submit="search()">
+      <section>
+        <p class="input-group">
+        <input type="text" ng-model="query" placeholder="Type in your query" uib-typeahead="suggestion for suggestion in getSuggestions($viewValue)"  typeahead-no-results="noResults" class="form-control" id="searchBox" autocomplete="off">
+        <span class="input-group-btn" class="form-control">
+          <button id="search" type="button" class="btn btn-primary" ng-click="search()">Go!</button>
+        </span>
+        </p>
+        <br/>
+      </section>
+    </form>
+    <table class="table table-striped">
+      <tbody ng-cloak>
+        <tr dir-paginate="result in results | itemsPerPage: 10" pagination-id="searchResultPagination">
+          <td>
+            <table>
+              <tr><td><a href="{{ result.Url }}" target="_blank">{{ result.Title }}</a></td></tr>
+              <tr><td><a href="{{ result.Url }}" target="_blank" class="url">{{ result.Url }}</a></td></tr>
+              <tr><td>{{ result.Description }}</td></tr>
+              <tr><td>{{ result.Id }}</td></tr>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="text-center"><dir-pagination-controls pagination-id="searchResultPagination"></dir-pagination-controls></div>
+  </div>
 </div>
 </body>
 </html>

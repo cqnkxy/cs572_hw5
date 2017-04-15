@@ -1,18 +1,15 @@
 package views
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
-	"encoding/json"
 
 	"cnn"
-	solr "github.com/rtt/Go-Solr"
-)
 
-var (
-	s, s_err = solr.Init("localhost", 8983, "myexample")
+	_solr "github.com/rtt/Go-Solr"
 )
 
 type SearchResult struct {
@@ -22,27 +19,21 @@ type SearchResult struct {
 	Id          string
 }
 
-func init() {
-	if s_err != nil {
-		// log.Fatal(s_err)
-	}
-}
-
 func Search(w http.ResponseWriter, r *http.Request) {
 	log.Println("Get request for ", r.URL.Query()["query"],
 		" using ", r.URL.Query()["method"])
-	q := solr.Query{
-		Params: solr.URLParamMap{
+	q := _solr.Query{
+		Params: _solr.URLParamMap{
 			"q":      r.URL.Query()["query"],
 			"indent": []string{"on"},
 			"wt":     []string{"json"},
 		},
-		Rows: 10,
+		Rows: 100,
 	}
 	if r.URL.Query()["method"][0] == "pagerank" {
 		q.Sort = url.QueryEscape("pageRankFile desc")
 	}
-	res, err := s.Select(&q)
+	res, err := solr.Select(&q)
 	if err != nil {
 		log.Println(err)
 	}
