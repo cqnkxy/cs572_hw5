@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"cnn"
@@ -19,6 +20,12 @@ const (
 	CNN_DATA_PATH = "/Users/xueyuan/Documents/USC/csci572/hw4/CNNData/CNNDownloadData/"
 )
 
+var skipRe *regexp.Regexp
+
+func init() {
+	skipRe = regexp.MustCompile("^script|style|<img|head|title")
+}
+
 type SearchResult struct {
 	Title       string
 	Url         string
@@ -28,7 +35,7 @@ type SearchResult struct {
 }
 
 func traverse(n *html.Node, query *string) (string, bool) {
-	if n.Data == "script" || strings.HasPrefix(n.Data, "<img") {
+	if skipRe.MatchString(n.Data) {
 		return "", false
 	}
 	if n.Type == html.TextNode && strings.Contains(strings.ToLower(n.Data), *query) {
@@ -55,7 +62,7 @@ func findFisrtMatchingSentence(query, fileId string) string {
 	if res, ok := traverse(doc, &query); ok {
 		return res
 	}
-	return "N.A."
+	return ""
 }
 
 func Search(w http.ResponseWriter, r *http.Request) {
@@ -81,7 +88,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 	searchResults := []*SearchResult{}
 	results := res.Results
 	for i := 0; i < results.Len(); i += 1 {
-		title, id, description, url := "N.A.", "N.A.", "N.A.", "N.A."
+		title, id, description, url := "", "N.A.", "", "N.A."
 		ids := strings.Split(results.Get(i).Field("id").(string), "/")
 		id = ids[len(ids)-1]
 		if titles, ok := results.Get(i).Field("title").([]interface{}); ok && len(titles) > 0 {
