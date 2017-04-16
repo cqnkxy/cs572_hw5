@@ -14,7 +14,7 @@
 <body>
 <div ng-controller="searchViewController">
   <div class='container-fluid'>
-    <h1>CSCI572 HW5</h1>
+    <h1>Search CNN</h1>
     <form class="form-group" ng-submit="search()">
       <section>
         <p class="input-group">
@@ -26,7 +26,15 @@
         <br/>
       </section>
     </form>
-    <table class="table table-striped">
+    <div ng-if="checkCorrect()">
+      <form ng-submit="correctSearch()">
+        <h5>Showing results for <span class="blue">{{ query }}</span>. Did you mean: <button class="btn btn-link" role="link" type="submit" value="{{ corrected }}">{{ corrected }}</button></h5>
+      </form>
+    </div>
+    <div ng-if="emptyResults()">
+      <h5>No results returned. Try something else.</h5>
+    </div>
+    <table class="table table-hover">
       <tbody ng-cloak>
         <tr dir-paginate="result in results | itemsPerPage: 10" pagination-id="searchResultPagination">
           <td>

@@ -28,7 +28,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 			"indent": []string{"on"},
 			"wt":     []string{"json"},
 		},
-		Rows: 100,
+		Rows: 20,
 	}
 	if r.URL.Query()["method"][0] == "pagerank" {
 		q.Sort = url.QueryEscape("pageRankFile desc")

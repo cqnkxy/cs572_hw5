@@ -12,7 +12,7 @@ import (
 var model map[string]int
 
 func init() {
-	// model = train("/Users/xueyuan/Documents/USC/csci572/hw5/src/spell/big.txt")
+	model = train("/Users/xueyuan/Documents/USC/csci572/hw5/src/data/big.txt")
 }
 
 func train(training_data string) map[string]int {
