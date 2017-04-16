@@ -27,29 +27,28 @@ func init() {
 }
 
 type SearchResult struct {
-	Title       string
-	Url         string
-	Description string
-	Id          string
-	Snippet     string
+	Title   string
+	Url     string
+	Id      string
+	Snippet string
 }
 
-func traverse(n *html.Node, query *string) (string, bool) {
+func traverse(n *html.Node, queryRe *regexp.Regexp) (string, bool) {
 	if skipRe.MatchString(n.Data) {
 		return "", false
 	}
-	if n.Type == html.TextNode && strings.Contains(strings.ToLower(n.Data), *query) {
+	if n.Type == html.TextNode && queryRe.MatchString(strings.ToLower(n.Data)) {
 		return n.Data, true
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if result, ok := traverse(c, query); ok {
+		if result, ok := traverse(c, queryRe); ok {
 			return result, true
 		}
 	}
 	return "", false
 }
 
-func findFisrtMatchingSentence(query, fileId string) string {
+func findFisrtMatchingSentence(query []string, fileId string) string {
 	file, err := os.Open(path.Join(CNN_DATA_PATH, fileId))
 	if err != nil {
 		panic(err)
@@ -59,10 +58,11 @@ func findFisrtMatchingSentence(query, fileId string) string {
 	if err != nil {
 		panic(err)
 	}
-	if res, ok := traverse(doc, &query); ok {
+	queryRe := regexp.MustCompile("(?i)" + strings.Join(query, " "))
+	if res, ok := traverse(doc, queryRe); ok {
 		return res
 	}
-	return ""
+	return "N.A."
 }
 
 func Search(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +88,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 	searchResults := []*SearchResult{}
 	results := res.Results
 	for i := 0; i < results.Len(); i += 1 {
-		title, id, description, url := "", "N.A.", "", "N.A."
+		title, id, description, url := "", "N.A.", "N.A.", "N.A."
 		ids := strings.Split(results.Get(i).Field("id").(string), "/")
 		id = ids[len(ids)-1]
 		if titles, ok := results.Get(i).Field("title").([]interface{}); ok && len(titles) > 0 {
@@ -96,14 +96,16 @@ func Search(w http.ResponseWriter, r *http.Request) {
 		}
 		if descriptions, ok := results.Get(i).Field("description").([]interface{}); ok && len(descriptions) > 0 {
 			description = descriptions[0].(string)
+			if !strings.Contains(description, strings.Join(query, " ")) {
+				description = findFisrtMatchingSentence(query, id)
+			}
 		}
 		url = cnn.IdToUrl[id]
 		searchResults = append(searchResults, &SearchResult{
-			Url:         url,
-			Title:       title,
-			Description: description,
-			Id:          id,
-			Snippet:     findFisrtMatchingSentence(strings.Join(query, " "), id),
+			Url:     url,
+			Title:   title,
+			Snippet: description,
+			Id:      id,
 		})
 	}
 	if js, err := json.Marshal(searchResults); err != nil {

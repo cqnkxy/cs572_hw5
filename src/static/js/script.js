@@ -1,6 +1,9 @@
-var app = angular.module('app', ['angularUtils.directives.dirPagination', 'ui.bootstrap', 'ngAnimate', 'ngSanitize']);
+var app = angular.module('app', [
+	'angularUtils.directives.dirPagination', 
+	'ui.bootstrap', 'ngAnimate', 'ngSanitize'
+]);
 
-function searchViewController($scope, $http) {
+app.controller("searchViewController", function($scope, $http) {
 	var shouldCorrect = false;
 	var hasSearched = false;
 	$scope.getSuggestions = function(val) {
@@ -65,6 +68,12 @@ function searchViewController($scope, $http) {
 	$scope.emptyResults = function() {
 		return hasSearched && $scope.results.length == 0;
 	};
-}
+})
+.filter('highlight', function($sce) {
+    return function(text, phrase) {
+      if (phrase) text = text.replace(new RegExp('('+phrase.split(" ").join("|")+')', 'gi'),
+        '<span class="highlighted">$1</span>')
 
-app.controller('searchViewController', searchViewController);
+      return $sce.trustAsHtml(text)
+    }
+})
