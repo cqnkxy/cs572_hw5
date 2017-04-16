@@ -20,7 +20,7 @@
         <p class="input-group">
         <input type="text" ng-model="query" placeholder="Type in your query" uib-typeahead="suggestion for suggestion in getSuggestions($viewValue)"  typeahead-no-results="noResults" class="form-control" id="searchBox" autocomplete="off">
         <span class="input-group-btn" class="form-control">
-          <button id="search" type="button" class="btn btn-primary" ng-click="search()">Go!</button>
+          <button id="search" type="button" class="btn-sm btn-primary" ng-click="search()">Go!</button>
         </span>
         </p>
         <br/>
@@ -28,7 +28,7 @@
     </form>
     <div ng-if="checkCorrect()">
       <form ng-submit="correctSearch()">
-        <h5>Showing results for <span class="blue">{{ query }}</span>. Did you mean: <button class="btn btn-link" role="link" type="submit" value="{{ corrected }}">{{ corrected }}</button></h5>
+        <h5>Showing results for:  <span class="blue">{{ query }}</span>. Did you mean:<button class="btn btn-link" role="link" type="submit" value="{{ corrected }}">{{ corrected }}</button></h5>
       </form>
     </div>
     <div ng-if="emptyResults()">

@@ -1,9 +1,13 @@
 package spell
 
 import (
+	"bufio"
 	"io/ioutil"
 	"log"
+	"os"
+	"path"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -11,6 +15,19 @@ var model map[string]int
 
 func init() {
 	// model = train("/Users/xueyuan/Documents/USC/csci572/hw5/src/data/big.txt")
+	model = map[string]int{}
+	file, err := os.Open(path.Join("/Users/xueyuan/Documents/USC/csci572/hw5/src/data", "trained.txt"))
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.Split(scanner.Text(), ",")
+		if num, err := strconv.Atoi(line[1]); err == nil {
+			model[line[0]] = num
+		}
+	}
 }
 
 func train(training_data string) map[string]int {
