@@ -23,7 +23,6 @@ function searchViewController($scope, $http) {
 	};
 	$scope.search = function() {
 		$scope.results = [];
-		hasSearched = true;
 		$scope.query = $scope.query.split(/\s+/).join(" ");
 		$http.get('search/', {
 			params: {
@@ -32,6 +31,7 @@ function searchViewController($scope, $http) {
 			}
 		}).then(function(response){
 			$scope.results = response.data;
+			hasSearched = true;
 		});
 		$scope.corrected = "";
 		$http.get('correct/', {
