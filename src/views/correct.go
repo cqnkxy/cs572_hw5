@@ -14,6 +14,10 @@ func Correct(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		http.NotFound(w, r)
 	}
+	if whole := spell.Correct(words[0]); whole != words[0] {
+		fmt.Fprint(w, whole);
+		return
+	}
 	corrected := []string{}
 	for _, word := range strings.Split(words[0], " ") {
 		if word != "" {

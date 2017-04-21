@@ -18,8 +18,10 @@ app.controller("searchViewController", function($scope, $http) {
 		}).then(function(response){
 			var res = [];
 			response.data.forEach(function(word){
-				words[words.length-1] = word;
-				res.push(words.join(" "));
+				if (word.startsWith(lastWord)){
+					words[words.length-1] = word;
+					res.push(words.join(" "));
+				}
 			});
 			return res;
 		});
@@ -60,7 +62,7 @@ app.controller("searchViewController", function($scope, $http) {
 			}
 		}).then(function(response){
 			$scope.results = response.data;
-		});	
+		});
 	};
 	$scope.checkCorrect = function() {
 		return shouldCorrect;
