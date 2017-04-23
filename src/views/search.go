@@ -23,7 +23,7 @@ const (
 var skipRe *regexp.Regexp
 
 func init() {
-	skipRe = regexp.MustCompile("^script|style|<img|head|title")
+	skipRe = regexp.MustCompile("^script|style")
 }
 
 type SearchResult struct {
@@ -37,8 +37,15 @@ func traverse(n *html.Node, queryRe *regexp.Regexp) (string, bool) {
 	if skipRe.MatchString(n.Data) {
 		return "", false
 	}
-	if n.Type == html.TextNode && queryRe.MatchString(strings.ToLower(n.Data)) {
+	if n.Type == html.TextNode && queryRe.MatchString(n.Data) {
 		return n.Data, true
+	}
+	if n.Type == html.ElementNode && n.Data == "img" {
+		for _, attr := range n.Attr {
+			if attr.Key == "alt" && queryRe.MatchString(attr.Val) {
+				return attr.Val, true
+			}
+		}
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if result, ok := traverse(c, queryRe); ok {
@@ -48,7 +55,7 @@ func traverse(n *html.Node, queryRe *regexp.Regexp) (string, bool) {
 	return "", false
 }
 
-func findFisrtMatchingSentence(query []string, fileId string) string {
+func findFisrtMatchingSentence(queryRe *regexp.Regexp, fileId string) string {
 	file, err := os.Open(path.Join(CNN_DATA_PATH, fileId))
 	if err != nil {
 		panic(err)
@@ -58,11 +65,10 @@ func findFisrtMatchingSentence(query []string, fileId string) string {
 	if err != nil {
 		panic(err)
 	}
-	queryRe := regexp.MustCompile("(?i)" + strings.Join(query, " "))
 	if res, ok := traverse(doc, queryRe); ok {
 		return res
 	}
-	return "N.A."
+	return ""
 }
 
 func Search(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +81,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 			"indent": []string{"on"},
 			"wt":     []string{"json"},
 		},
-		Rows: 10,
+		Rows: 20,
 	}
 	if r.URL.Query()["method"][0] == "pagerank" {
 		q.Sort = url.QueryEscape("pageRankFile desc")
@@ -88,7 +94,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 	searchResults := []*SearchResult{}
 	results := res.Results
 	for i := 0; i < results.Len(); i += 1 {
-		title, id, description, url := "", "N.A.", "N.A.", "N.A."
+		title, id, description, url := "", "N.A.", "", "N.A."
 		ids := strings.Split(results.Get(i).Field("id").(string), "/")
 		id = ids[len(ids)-1]
 		if titles, ok := results.Get(i).Field("title").([]interface{}); ok && len(titles) > 0 {
@@ -96,8 +102,9 @@ func Search(w http.ResponseWriter, r *http.Request) {
 		}
 		if descriptions, ok := results.Get(i).Field("description").([]interface{}); ok && len(descriptions) > 0 {
 			description = descriptions[0].(string)
-			if !strings.Contains(description, strings.Join(query, " ")) {
-				description = findFisrtMatchingSentence(query, id)
+			queryRe := regexp.MustCompile("(?i)" + strings.Join(query, "|"))
+			if !queryRe.MatchString(description) {
+				description = findFisrtMatchingSentence(queryRe, id)
 			}
 		}
 		url = cnn.IdToUrl[id]

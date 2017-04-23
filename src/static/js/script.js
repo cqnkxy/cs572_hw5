@@ -4,12 +4,12 @@ var app = angular.module('app', [
 ]);
 
 app.controller("searchViewController", function($scope, $http) {
-	var shouldCorrect = false;
+	var hasCorrected = false;
 	var hasSearched = false;
 	$scope.getSuggestions = function(val) {
 		var words = val.split(/\s+/);
 		var lastWord = words[words.length-1];
-		shouldCorrect = false;
+		hasCorrected = false;
 		hasSearched = false;
 		return $http.get('suggest/', {
 			params: {
@@ -29,6 +29,32 @@ app.controller("searchViewController", function($scope, $http) {
 	$scope.search = function() {
 		$scope.results = [];
 		$scope.query = $scope.query.split(/\s+/).join(" ");
+		$scope.corrected = "";
+		$http.get('correct/', {
+			params: {
+				words: $scope.query,
+			}
+		}).then(function(response){
+			$scope.corrected = response.data;
+			if (response.data.toLowerCase() != $scope.query.toLowerCase()) {
+				hasCorrected = true;
+			}
+			$http.get('search/', {
+				params: {
+					query: $scope.corrected,
+					method: "default"
+				}
+			}).then(function(response){
+				$scope.results = response.data;
+				hasSearched = true;
+			});
+		});
+		
+	};
+	$scope.insteadSearch = function() {
+		console.log(`query=${$scope.query}, corrected=${$scope.corrected}`);
+		hasCorrected = false;
+		$scope.results = [];
 		$http.get('search/', {
 			params: {
 				query: $scope.query,
@@ -36,36 +62,10 @@ app.controller("searchViewController", function($scope, $http) {
 			}
 		}).then(function(response){
 			$scope.results = response.data;
-			hasSearched = true;
-		});
-		$scope.corrected = "";
-		$http.get('correct/', {
-			params: {
-				words: $scope.query,
-			}
-		}).then(function(response){
-			if (response.data.toLowerCase() != $scope.query.toLowerCase()) {
-				$scope.corrected = response.data;
-				shouldCorrect = true;
-			}
-		});
-	};
-	$scope.correctSearch = function() {
-		console.log(`query=${$scope.query}, corrected=${$scope.corrected}`);
-		shouldCorrect = false;
-		$scope.query = $scope.corrected;
-		$scope.results = [];
-		$http.get('search/', {
-			params: {
-				query: $scope.corrected,
-				method: "default"
-			}
-		}).then(function(response){
-			$scope.results = response.data;
 		});
 	};
 	$scope.checkCorrect = function() {
-		return shouldCorrect;
+		return hasCorrected;
 	}
 	$scope.emptyResults = function() {
 		return hasSearched && $scope.results.length == 0;

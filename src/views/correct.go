@@ -15,7 +15,7 @@ func Correct(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 	}
 	if whole := spell.Correct(words[0]); whole != words[0] {
-		fmt.Fprint(w, whole);
+		fmt.Fprint(w, whole)
 		return
 	}
 	corrected := []string{}

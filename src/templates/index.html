@@ -27,8 +27,9 @@
       </section>
     </form>
     <div ng-if="checkCorrect()">
-      <form ng-submit="correctSearch()">
-        <h5>Showing results for:  <span class="blue">{{ query }}</span>. Did you mean:<button class="btn btn-link" role="link" type="submit" value="{{ corrected }}">{{ corrected }}</button></h5>
+      <form ng-submit="insteadSearch()">
+        <h5>Showing results for <span class="blue">{{ corrected }}</span></h5>
+        <h6>Instead search for <span><button class="btn btn-link" role="link" type="submit" value="{{ corrected }}">{{ query }}</button></span></h6>
       </form>
     </div>
     <div ng-if="emptyResults()">
@@ -41,7 +42,7 @@
             <table>
               <tr><td><a href="{{ result.Url }}" target="_blank">{{ result.Title }}</a></td></tr>
               <tr><td><a href="{{ result.Url }}" target="_blank" class="url">{{ result.Url }}</a></td></tr>
-              <tr><td><span ng-bind-html="result.Snippet | highlight:query"></span></td></tr>
+              <tr><td><span ng-bind-html="result.Snippet | highlight:corrected"></span></td></tr>
               <tr><td>{{ result.Id }}</td></tr>
             </table>
           </td>
