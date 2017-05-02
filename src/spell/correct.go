@@ -45,25 +45,6 @@ func train(training_data string) map[string]int {
 	return NWORDS
 }
 
-// func train(training_data string) map[string]int {
-// 	log.Println("Training data...")
-// 	file, err := os.Open(training_data)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer file.Close()
-// 	NWORDS := make(map[string]int)
-// 	scanner := bufio.NewScanner(file)
-// 	pattern := regexp.MustCompile("[a-z]+")
-// 	for scanner.Scan() {
-// 		for _, w := range pattern.FindAllString(strings.ToLower(scanner.Text()), -1) {
-// 			NWORDS[w]++
-// 		}
-// 	}
-// 	log.Println("Training finished!")
-// 	return NWORDS
-// }
-
 func edits1(word string, ch chan string) {
 	const alphabet = "abcdefghijklmnopqrstuvwxyz"
 	type Pair struct{ a, b string }

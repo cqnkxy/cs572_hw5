@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	bs "bytes"
 
 	_solr "github.com/rtt/Go-Solr"
 )
@@ -13,7 +14,8 @@ func Suggest(w http.ResponseWriter, r *http.Request) {
 	words, ok := r.URL.Query()["words"]
 	log.Println("Got suggest request for ", words)
 	if !ok {
-		http.NotFound(w, r)
+		http.Error(w, "Request format error!", http.StatusBadRequest)
+		return
 	}
 	bytes, err := _solr.HTTPGet(fmt.Sprintf(
 		"http://localhost:8983/solr/newcore/suggest?indent=on&q=%s&wt=json",
@@ -21,33 +23,31 @@ func Suggest(w http.ResponseWriter, r *http.Request) {
 	))
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		log.Println(err)
-		js, _ := json.Marshal([]string{})
-		fmt.Fprint(w, js)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	var container interface{}
-	if err := json.Unmarshal(bytes, &container); err != nil {
-		log.Println(err)
-		js, _ := json.Marshal([]string{})
-		fmt.Fprint(w, js)
-		return
-	}
-
-	response_root := container.(map[string]interface{})
-	response := response_root["suggest"].(map[string]interface{})["suggest"].(map[string]interface{})[words[0]].(map[string]interface{})["suggestions"].([]interface{})
-	suggestions := []string{}
-	for i := 0; i < len(response); i += 1 {
-		term := response[i].(map[string]interface{})["term"].(string)
-		if len(term) < 15 {
-			suggestions = append(suggestions, term)
+	var data struct {
+		Suggest struct {
+			Suggest map[string]struct{
+				Suggestions []struct{
+					Term string
+				}
+			}
 		}
+	}
+
+	suggestions := []string{}
+	if err = json.NewDecoder(bs.NewReader(bytes)).Decode(&data); err != nil {
+		panic(err)
+	}
+	for _, suggestion := range data.Suggest.Suggest[words[0]].Suggestions {
+		suggestions = append(suggestions, suggestion.Term)
 	}
 	if js, err := json.Marshal(suggestions); err == nil {
 		log.Println("Suggest as ", suggestions)
 		w.Write(js)
 	} else {
-		log.Println(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 }

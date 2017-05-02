@@ -18,10 +18,12 @@ app.controller("searchViewController", function($scope, $http) {
 		}).then(function(response){
 			var res = [];
 			response.data.forEach(function(word){
-				if (word.startsWith(lastWord)){
-					words[words.length-1] = word;
-					res.push(words.join(" "));
-				}
+				// if (word.startsWith(lastWord)){
+				// 	words[words.length-1] = word;
+				// 	res.push(words.join(" "));
+				// }
+				words[words.length-1] = word;
+				res.push(words.join(" "));
 			});
 			return res;
 		});
